@@ -19,7 +19,7 @@
     - dependencies
 
 - name: Check if Google Cloud CLI is already installed
-  ansible.builtin.command: gcloud --version
+  ansible.builtin.command: which gcloud
   register: gcloud_installed
   changed_when: false
   failed_when: false
@@ -29,9 +29,21 @@
     - google_cloud
     - cloud
 
+- name: Get Google Cloud CLI version if installed
+  ansible.builtin.command: gcloud --version
+  register: gcloud_version_check
+  changed_when: false
+  failed_when: false
+  when: gcloud_installed.rc == 0
+  tags:
+    - gcloud_cli
+    - gcloud
+    - google_cloud
+    - cloud
+
 - name: Display current Google Cloud CLI version if installed
   ansible.builtin.debug:
-    msg: "Google Cloud CLI already installed: {{ gcloud_installed.stdout_lines[0] }}"
+    msg: "Google Cloud CLI already installed: {{ gcloud_version_check.stdout_lines[0] }}"
   when: gcloud_installed.rc == 0
   tags:
     - gcloud_cli

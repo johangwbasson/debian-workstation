@@ -18,7 +18,7 @@
     - dependencies
 
 - name: Check if AWS CLI is already installed
-  ansible.builtin.command: aws --version
+  ansible.builtin.command: which aws
   register: awscli_installed
   changed_when: false
   failed_when: false
@@ -27,9 +27,20 @@
     - aws
     - cloud
 
+- name: Get AWS CLI version if installed
+  ansible.builtin.command: aws --version
+  register: awscli_version_check
+  changed_when: false
+  failed_when: false
+  when: awscli_installed.rc == 0
+  tags:
+    - awscli
+    - aws
+    - cloud
+
 - name: Display current AWS CLI version if installed
   ansible.builtin.debug:
-    msg: "AWS CLI already installed: {{ awscli_installed.stdout }}"
+    msg: "AWS CLI already installed: {{ awscli_version_check.stdout }}"
   when: awscli_installed.rc == 0
   tags:
     - awscli

@@ -19,7 +19,7 @@
     - dependencies
 
 - name: Check if Azure CLI is already installed
-  ansible.builtin.command: az --version
+  ansible.builtin.command: which az
   register: azure_cli_installed
   changed_when: false
   failed_when: false
@@ -28,9 +28,20 @@
     - azure
     - cloud
 
+- name: Get Azure CLI version if installed
+  ansible.builtin.command: az --version
+  register: azure_cli_version_check
+  changed_when: false
+  failed_when: false
+  when: azure_cli_installed.rc == 0
+  tags:
+    - azure_cli
+    - azure
+    - cloud
+
 - name: Display current Azure CLI version if installed
   ansible.builtin.debug:
-    msg: "Azure CLI already installed: {{ azure_cli_installed.stdout_lines[0] }}"
+    msg: "Azure CLI already installed: {{ azure_cli_version_check.stdout_lines[0] }}"
   when: azure_cli_installed.rc == 0
   tags:
     - azure_cli
@@ -100,10 +111,22 @@
     - cloud
     - cleanup
 
-- name: Get Ubuntu codename
+- name: Get Debian/Ubuntu codename
   ansible.builtin.command: lsb_release -cs
-  register: ubuntu_codename
+  register: os_codename
   changed_when: false
+  tags:
+    - azure_cli
+    - azure
+    - cloud
+
+- name: Map Debian/Ubuntu codename to Azure CLI supported version
+  ansible.builtin.set_fact:
+    azure_cli_codename: >-
+      {{
+        'bookworm' if os_codename.stdout in ['trixie', 'sid']
+        else os_codename.stdout
+      }}
   tags:
     - azure_cli
     - azure
@@ -111,7 +134,7 @@
 
 - name: Add Microsoft Azure CLI repository
   ansible.builtin.apt_repository:
-    repo: "deb [arch=amd64 signed-by={{ azure_cli_keyring_path }}] {{ azure_cli_repo_url }} {{ ubuntu_codename.stdout }} main"
+    repo: "deb [arch=amd64 signed-by={{ azure_cli_keyring_path }}] {{ azure_cli_repo_url }} {{ azure_cli_codename }} main"
     filename: azure-cli
     state: present
   tags:
