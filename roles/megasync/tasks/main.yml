@@ -68,6 +68,27 @@
     - cloud-storage
     - security
 
+- name: Determine MEGA repository distribution name
+  ansible.builtin.set_fact:
+    mega_distro_name: >-
+      {{
+        'Debian_12.0' if ansible_distribution == 'Debian' and ansible_distribution_major_version|int >= 12
+        else 'Debian_' + ansible_distribution_version
+      }}
+  tags:
+    - megasync
+    - packages
+    - cloud-storage
+
+- name: Set MEGA repository URLs
+  ansible.builtin.set_fact:
+    mega_gpg_key_url: "https://mega.nz/linux/repo/{{ mega_distro_name }}/Release.key"
+    mega_repo_url: "https://mega.nz/linux/repo/{{ mega_distro_name }}"
+  tags:
+    - megasync
+    - packages
+    - cloud-storage
+
 - name: Download MEGA GPG key
   ansible.builtin.get_url:
     url: "{{ mega_gpg_key_url }}"
