@@ -1,0 +1,99 @@
+---
+# tasks file for multimedia_codecs
+
+- name: Install GStreamer base plugins
+  ansible.builtin.apt:
+    name:
+      - gstreamer1.0-plugins-base
+      - gstreamer1.0-plugins-good
+      - gstreamer1.0-plugins-bad
+      - gstreamer1.0-plugins-ugly
+      - gstreamer1.0-libav
+      - gstreamer1.0-tools
+    state: present
+    update_cache: true
+  tags:
+    - multimedia
+    - codecs
+    - gstreamer
+    - packages
+
+- name: Install FFmpeg and multimedia libraries
+  ansible.builtin.apt:
+    name:
+      - ffmpeg
+      - libavcodec-extra
+      - libavcodec-dev
+      - libavformat-dev
+      - libavutil-dev
+      - libswscale-dev
+    state: present
+  tags:
+    - multimedia
+    - codecs
+    - ffmpeg
+    - packages
+
+- name: Install audio codec libraries
+  ansible.builtin.apt:
+    name:
+      - lame
+      - libmp3lame0
+      - libogg0
+      - libvorbis0a
+      - libvorbisenc2
+      - libflac12
+      - libopus0
+      - libopusfile0
+      - vorbis-tools
+      - flac
+    state: present
+  tags:
+    - multimedia
+    - codecs
+    - audio
+    - packages
+
+- name: Install video codec libraries
+  ansible.builtin.apt:
+    name:
+      - libx264-164
+      - libx265-199
+      - libvpx7
+      - libtheora0
+      - libde265-0
+      - libwebp7
+    state: present
+  tags:
+    - multimedia
+    - codecs
+    - video
+    - packages
+
+- name: Install multimedia container format support
+  ansible.builtin.apt:
+    name:
+      - libmatroska7
+      - libmms0
+      - libmpg123-0
+      - libmpeg2-4
+    state: present
+  tags:
+    - multimedia
+    - codecs
+    - containers
+    - packages
+
+- name: Install VA-API for hardware acceleration
+  ansible.builtin.apt:
+    name:
+      - vainfo
+      - libva-drm2
+      - libva-x11-2
+      - libva2
+    state: present
+  tags:
+    - multimedia
+    - codecs
+    - hardware-acceleration
+    - packages
