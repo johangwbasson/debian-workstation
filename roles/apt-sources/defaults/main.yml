@@ -1,0 +1,13 @@
+---
+# Default variables for apt-sources role
+
+# Debian release information
+debian_release: "13"
+debian_codename: "trixie"
+
+# Mirror URLs
+debian_mirror: "http://deb.debian.org/debian"
+debian_security_mirror: "http://deb.debian.org/debian-security"
+
+# Backup original sources.list
+backup_sources_list: true

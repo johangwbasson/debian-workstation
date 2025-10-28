@@ -1,0 +1,13 @@
+---
+# Default variables for firefox role
+
+# Firefox Flatpak application ID
+firefox_flatpak_id: org.mozilla.firefox
+
+# Debian packages to remove
+firefox_debian_packages_to_remove:
+  - firefox-esr
+  - firefox-esr-l10n-en-gb
+
+# Installation method (flatpak or skip)
+firefox_install_flatpak: true

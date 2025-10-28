@@ -1,0 +1,4 @@
+---
+# defaults file for chromium
+# Chromium is now installed from Flathub instead of PPA
+chromium_apt_preferences_file: /etc/apt/preferences.d/chromium-no-snap

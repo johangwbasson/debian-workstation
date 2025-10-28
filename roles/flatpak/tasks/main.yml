@@ -1,0 +1,31 @@
+---
+# Main tasks for flatpak role
+
+- name: Install flatpak and discover plugin
+  ansible.builtin.apt:
+    name: "{{ flatpak_packages }}"
+    state: present
+    update_cache: true
+
+- name: Add flathub remote repository
+  ansible.builtin.command:
+    cmd: "flatpak remote-add --if-not-exists {{ flatpak_flathub_remote_name }} {{ flatpak_flathub_remote_url }}"
+  register: flathub_remote_result
+  changed_when: "'already exists' not in flathub_remote_result.stderr"
+  failed_when:
+    - flathub_remote_result.rc != 0
+    - "'already exists' not in flathub_remote_result.stderr"
+
+- name: Enable flathub remote
+  ansible.builtin.command:
+    cmd: "flatpak remote-modify --enable {{ flatpak_flathub_remote_name }}"
+  register: flathub_enable_result
+  changed_when: false
+  failed_when: flathub_enable_result.rc != 0
+
+- name: Verify flathub remote configuration
+  ansible.builtin.command:
+    cmd: flatpak remotes --show-details
+  register: flatpak_remotes
+  changed_when: false
+  failed_when: flatpak_flathub_remote_name not in flatpak_remotes.stdout

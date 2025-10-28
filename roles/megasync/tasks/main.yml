@@ -1,0 +1,220 @@
+---
+# tasks file for megasync
+
+# CLEANUP FIRST - Before any APT operations
+# This ensures we start with a clean slate if there are any conflicting repositories
+
+- name: Remove ALL existing MEGA repository files (clean slate)
+  ansible.builtin.file:
+    path: "/etc/apt/sources.list.d/{{ item }}"
+    state: absent
+  loop:
+    - megasync.list      # Remove existing file (may have duplicates)
+    - megasync.sources   # Remove DEB822 format if exists
+    - mega.list          # Remove alternate name
+    - mega.sources       # Remove DEB822 alternate
+  tags:
+    - megasync
+    - packages
+    - cloud-storage
+    - cleanup
+
+- name: Remove old/conflicting MEGA GPG keyrings
+  ansible.builtin.file:
+    path: "/usr/share/keyrings/{{ item }}"
+    state: absent
+  loop:
+    - meganz-archive-keyring.gpg      # Old keyring name
+    - mega-archive-keyring.gpg        # Alternate name
+  tags:
+    - megasync
+    - packages
+    - cloud-storage
+    - cleanup
+    - security
+
+- name: Install dependencies for MEGAsync installation
+  ansible.builtin.apt:
+    name:
+      - curl
+      - gpg
+    state: present
+    update_cache: true
+  tags:
+    - megasync
+    - packages
+    - cloud-storage
+    - dependencies
+
+- name: Check if MEGA GPG keyring exists and is valid
+  ansible.builtin.command: gpg --list-keys --keyring "{{ mega_gpg_keyring_path }}"
+  register: mega_keyring_check
+  changed_when: false
+  failed_when: false
+  tags:
+    - megasync
+    - packages
+    - cloud-storage
+    - security
+
+- name: Remove corrupted MEGA GPG keyring if invalid
+  ansible.builtin.file:
+    path: "{{ mega_gpg_keyring_path }}"
+    state: absent
+  when: mega_keyring_check.rc != 0
+  tags:
+    - megasync
+    - packages
+    - cloud-storage
+    - security
+
+- name: Download MEGA GPG key
+  ansible.builtin.get_url:
+    url: "{{ mega_gpg_key_url }}"
+    dest: /tmp/mega-release.key
+    mode: '0644'
+  tags:
+    - megasync
+    - packages
+    - cloud-storage
+    - security
+
+- name: Convert and install MEGA GPG key to keyring
+  ansible.builtin.shell: |
+    set -o pipefail
+    cat /tmp/mega-release.key | gpg --dearmor --output {{ mega_gpg_keyring_path }}
+  args:
+    executable: /bin/bash
+    creates: "{{ mega_gpg_keyring_path }}"
+  tags:
+    - megasync
+    - packages
+    - cloud-storage
+    - security
+
+- name: Set proper permissions on MEGA keyring
+  ansible.builtin.file:
+    path: "{{ mega_gpg_keyring_path }}"
+    mode: '0644'
+    owner: root
+    group: root
+  tags:
+    - megasync
+    - packages
+    - cloud-storage
+    - security
+
+- name: Remove temporary GPG key file
+  ansible.builtin.file:
+    path: /tmp/mega-release.key
+    state: absent
+  tags:
+    - megasync
+    - packages
+    - cloud-storage
+    - cleanup
+
+- name: Add MEGA repository
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by={{ mega_gpg_keyring_path }}] {{ mega_repo_url }} ./"
+    state: present
+    filename: megasync
+    update_cache: true
+  tags:
+    - megasync
+    - packages
+    - cloud-storage
+
+- name: Check if MEGAsync is already installed
+  ansible.builtin.command: dpkg -l megasync
+  register: megasync_installed
+  changed_when: false
+  failed_when: false
+  tags:
+    - megasync
+    - packages
+    - cloud-storage
+
+- name: Install MEGAsync
+  ansible.builtin.apt:
+    name: megasync
+    state: "{{ mega_package_state }}"
+    update_cache: true
+  tags:
+    - megasync
+    - packages
+    - cloud-storage
+
+- name: Install MEGA CMD (optional CLI tools)
+  ansible.builtin.apt:
+    name: megacmd
+    state: "{{ mega_package_state }}"
+    update_cache: true
+  when: mega_install_megacmd | bool
+  tags:
+    - megasync
+    - packages
+    - cloud-storage
+    - cli
+
+- name: Display MEGAsync installation info
+  ansible.builtin.debug:
+    msg: |
+      MEGAsync has been installed successfully!
+
+      Installed components:
+      - MEGAsync (Desktop sync client)
+      {% if mega_install_megacmd %}
+      - MEGAcmd (Command-line tools)
+      {% endif %}
+
+      Getting started with MEGAsync:
+      1. Launch MEGAsync from your application menu
+      2. Log in with your MEGA account (or create one at https://mega.io)
+      3. Configure sync folders
+      4. Enable automatic start on login (optional)
+
+      MEGAsync Features:
+      - Automatic file synchronization
+      - Selective sync (choose folders)
+      - Bandwidth management
+      - Proxy support
+      - End-to-end encryption
+      - Version history
+      - File sharing
+
+      {% if mega_install_megacmd %}
+      MEGAcmd CLI commands:
+      - mega-login              : Login to your MEGA account
+      - mega-ls                 : List files in MEGA
+      - mega-get <file>         : Download file from MEGA
+      - mega-put <file>         : Upload file to MEGA
+      - mega-sync <local> <remote> : Create sync between folders
+      - mega-help               : Show all available commands
+
+      MEGAcmd usage:
+      1. Login: mega-login your@email.com
+      2. List files: mega-ls
+      3. Upload: mega-put /path/to/file /remote/folder
+      4. Download: mega-get /remote/file /local/folder
+      {% endif %}
+
+      Useful tips:
+      - Right-click files/folders for MEGA options
+      - Check sync status in system tray icon
+      - Configure bandwidth limits in settings
+      - Enable "Start on startup" for automatic sync
+
+      Configuration:
+      - Settings available in MEGAsync tray icon
+      - Sync folders: Right-click tray icon → Settings → Syncs
+      - Account info: Right-click tray icon → Settings → Account
+
+      MEGA will receive automatic updates through APT!
+
+      Documentation: https://mega.io/desktop
+      Support: https://help.mega.io
+  tags:
+    - megasync
+    - packages
+    - cloud-storage

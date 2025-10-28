@@ -1,0 +1,51 @@
+---
+- name: Provision Debian 13 KDE Machine
+  hosts: local
+  become: true
+  gather_facts: true
+
+  vars_files:
+    - .vars.yml
+
+  roles:
+    - apt-sources
+    - common
+    - nvidia
+    - docker
+    - flatpak
+    - fish_shell
+    - firefox
+    - fonts
+    - bitwarden
+    - brave
+    - chrome-browser
+    - chromium
+    - git
+    - home
+    - java
+    - insomnia
+    - kde
+    - lazydocker
+    - lazygit
+    - lazyvim
+    - obsidian
+    - onepassword
+    - onlyoffice
+    - postman
+    - rust
+    - slack
+    - spotify
+    - sublime_text
+    - zram
+    - awscli
+    - azure_cli
+    - clamav
+    - cli_tools
+    - gcloud_cli
+    - kubectl
+    - megasync
+    - terraform
+    - vscode
+    - zoom
+    - btrfs_optimize
+    - ufw

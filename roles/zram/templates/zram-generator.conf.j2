@@ -1,0 +1,12 @@
+# Ansible managed - systemd-zram-generator configuration
+# Documentation: man zram-generator.conf
+
+[zram0]
+# Size as percentage of RAM
+zram-size = ram * {{ zram_size_percent | default(50) }} / 100
+
+# Compression algorithm (lz4, lzo, zstd)
+compression-algorithm = {{ zram_compression_algorithm | default('lz4') }}
+
+# Swap priority (higher = preferred)
+swap-priority = {{ zram_swap_priority | default(100) }}

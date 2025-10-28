@@ -1,0 +1,16 @@
+---
+# User-specific variables
+# Copy this file to .vars.yml and fill in your details
+
+# Git configuration
+git_name: Your Name
+git_email: your.email@example.com
+
+# System configuration
+username: your-username
+hostname: your-hostname
+
+# Computed variables (usually don't need to change these)
+user_home: '/home/{{ username }}'
+user_bashrc: '{{ user_home }}/.bashrc'
+user_profile: '{{ user_home }}/.profile'

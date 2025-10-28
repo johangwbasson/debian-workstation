@@ -1,0 +1,12 @@
+---
+galaxy_info:
+  author: Johan
+  description: Common system configuration for Debian 13 KDE
+  license: MIT
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Debian
+      versions:
+        - all
+
+dependencies: []

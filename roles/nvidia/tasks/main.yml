@@ -1,0 +1,42 @@
+---
+- name: Install kernel headers and build tools
+  ansible.builtin.apt:
+    name:
+      - linux-headers-{{ ansible_kernel }}
+      - build-essential
+      - dkms
+      - nvidia-detect
+    state: present
+    update_cache: true
+
+- name: Install NVIDIA drivers and firmware
+  ansible.builtin.apt:
+    name:
+      - nvidia-kernel-dkms
+      - nvidia-driver
+      - firmware-misc-nonfree
+    state: present
+
+- name: Check if i386 architecture is already enabled
+  ansible.builtin.command:
+    cmd: dpkg --print-foreign-architectures
+  register: foreign_archs
+  changed_when: false
+
+- name: Enable i386 architecture for 32-bit support
+  ansible.builtin.command:
+    cmd: dpkg --add-architecture i386
+  when: "'i386' not in foreign_archs.stdout"
+  register: add_arch
+  changed_when: add_arch.rc == 0
+
+- name: Update apt cache after adding i386 architecture
+  ansible.builtin.apt:
+    update_cache: true
+  when: "'i386' not in foreign_archs.stdout and add_arch.changed"
+
+- name: Install 32-bit NVIDIA driver libraries
+  ansible.builtin.apt:
+    name:
+      - nvidia-driver-libs:i386
+    state: present

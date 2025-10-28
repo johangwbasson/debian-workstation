@@ -1,0 +1,18 @@
+# {{ ansible_managed }}
+# Debian {{ debian_release }} ({{ debian_codename }}) repositories
+
+# Main repository
+deb {{ debian_mirror }} {{ debian_codename }} main contrib non-free non-free-firmware
+# deb-src {{ debian_mirror }} {{ debian_codename }} main contrib non-free non-free-firmware
+
+# Updates repository
+deb {{ debian_mirror }} {{ debian_codename }}-updates main contrib non-free non-free-firmware
+# deb-src {{ debian_mirror }} {{ debian_codename }}-updates main contrib non-free non-free-firmware
+
+# Security repository
+deb {{ debian_security_mirror }} {{ debian_codename }}-security main contrib non-free non-free-firmware
+# deb-src {{ debian_security_mirror }} {{ debian_codename }}-security main contrib non-free non-free-firmware
+
+# Backports repository
+deb {{ debian_mirror }} {{ debian_codename }}-backports main contrib non-free non-free-firmware
+# deb-src {{ debian_mirror }} {{ debian_codename }}-backports main contrib non-free non-free-firmware

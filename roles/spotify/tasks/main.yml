@@ -1,0 +1,90 @@
+---
+# tasks file for spotify
+
+- name: Remove old Spotify repository file if exists
+  ansible.builtin.file:
+    path: "/etc/apt/sources.list.d/{{ item }}"
+    state: absent
+  loop:
+    - spotify.list
+    - spotify.sources
+  tags:
+    - spotify
+    - packages
+    - media
+    - music
+    - cleanup
+
+- name: Remove old Spotify GPG keyring if exists
+  ansible.builtin.file:
+    path: /usr/share/keyrings/spotify-archive-keyring.gpg
+    state: absent
+  tags:
+    - spotify
+    - packages
+    - media
+    - music
+    - cleanup
+
+- name: Ensure Flatpak is installed
+  ansible.builtin.apt:
+    name: flatpak
+    state: present
+  tags:
+    - spotify
+    - packages
+    - media
+    - music
+    - flatpak
+    - dependencies
+
+- name: Install Spotify from Flathub
+  community.general.flatpak:
+    name: "{{ spotify_flatpak_id }}"
+    state: present
+    remote: "{{ flatpak_remote }}"
+    method: "{{ flatpak_method }}"
+  tags:
+    - spotify
+    - packages
+    - media
+    - music
+    - flatpak
+
+- name: Display Spotify installation info
+  ansible.builtin.debug:
+    msg: |
+      Spotify has been installed successfully from Flathub!
+
+      Installed as Flatpak application:
+      - Spotify Client (com.spotify.Client)
+      - Sandboxed for security
+      - Automatic updates via Flatpak
+
+      Useful commands:
+      - flatpak run com.spotify.Client  : Launch Spotify
+      - Or search for "Spotify" in application menu
+
+      Features:
+      - Music streaming
+      - Podcasts
+      - Playlists
+      - Offline mode (Premium)
+      - Connect (multi-device)
+
+      Manage permissions with Flatseal:
+      - flatpak run com.github.tchx84.Flatseal
+      - Select Spotify to adjust permissions
+
+      Update Spotify:
+      - flatpak update com.spotify.Client
+      - Or: flatpak update (updates all)
+
+      Note: Flatpak version provides better sandboxing than
+      the repository version and avoids GPG key issues.
+  tags:
+    - spotify
+    - packages
+    - media
+    - music
+    - flatpak

@@ -1,0 +1,14 @@
+---
+# handlers file for zram
+
+- name: Regenerate systemd units
+  ansible.builtin.systemd:
+    daemon_reload: true
+  when: zram_method == 'package'
+
+- name: Restart zram service
+  ansible.builtin.systemd:
+    name: zram
+    state: restarted
+    daemon_reload: true
+  when: zram_method == 'manual'

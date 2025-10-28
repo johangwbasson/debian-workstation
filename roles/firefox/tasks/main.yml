@@ -1,0 +1,33 @@
+---
+# Main tasks for firefox role
+
+- name: Remove Firefox ESR package
+  ansible.builtin.apt:
+    name: "{{ firefox_debian_packages_to_remove }}"
+    state: absent
+    purge: true
+    autoremove: true
+
+- name: Check if Firefox Flatpak is already installed
+  ansible.builtin.command:
+    cmd: flatpak list --app --columns=application
+  register: firefox_flatpak_list
+  changed_when: false
+  failed_when: false
+
+- name: Install Firefox from Flathub
+  ansible.builtin.command:
+    cmd: "flatpak install -y flathub {{ firefox_flatpak_id }}"
+  when:
+    - firefox_install_flatpak | bool
+    - firefox_flatpak_id not in firefox_flatpak_list.stdout
+  register: firefox_install_result
+  changed_when: firefox_install_result.rc == 0
+
+- name: Verify Firefox Flatpak installation
+  ansible.builtin.command:
+    cmd: "flatpak info {{ firefox_flatpak_id }}"
+  register: firefox_info
+  changed_when: false
+  failed_when: firefox_info.rc != 0
+  when: firefox_install_flatpak | bool

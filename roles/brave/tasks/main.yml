@@ -1,0 +1,101 @@
+---
+# tasks file for brave
+
+# CLEANUP FIRST - Before any APT operations
+# This ensures we start with a clean slate if there are any conflicting repositories
+
+- name: Remove existing Brave repository file to prevent duplicates
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/brave-browser-release.list
+    state: absent
+  tags:
+    - brave
+    - packages
+    - browser
+    - cleanup
+
+- name: Remove legacy Brave repository files (if they exist)
+  ansible.builtin.file:
+    path: "/etc/apt/sources.list.d/{{ item }}"
+    state: absent
+  loop:
+    - brave-browser-release.sources
+    - brave-browser.list
+    - brave-browser.sources
+    - brave.list
+    - brave.sources
+  tags:
+    - brave
+    - packages
+    - browser
+    - cleanup
+
+- name: Install APT transport and dependencies
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - curl
+    state: present
+    update_cache: true
+  tags:
+    - brave
+    - packages
+    - browser
+    - dependencies
+
+- name: Check if Brave GPG keyring exists and is valid
+  ansible.builtin.command: gpg --list-keys --keyring "{{ brave_gpg_keyring_path }}"
+  register: brave_keyring_check
+  changed_when: false
+  failed_when: false
+  tags:
+    - brave
+    - packages
+    - browser
+    - security
+
+- name: Remove corrupted Brave GPG keyring if invalid
+  ansible.builtin.file:
+    path: "{{ brave_gpg_keyring_path }}"
+    state: absent
+  when: brave_keyring_check.rc != 0
+  tags:
+    - brave
+    - packages
+    - browser
+    - security
+
+- name: Download Brave GPG key
+  ansible.builtin.get_url:
+    url: "{{ brave_gpg_key_url }}"
+    dest: "{{ brave_gpg_keyring_path }}"
+    mode: '0644'
+    owner: root
+    group: root
+    force: false
+  tags:
+    - brave
+    - packages
+    - browser
+    - security
+
+- name: Add Brave browser repository
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64 signed-by={{ brave_gpg_keyring_path }}] {{ brave_repo_url }} stable {{ brave_repo_component }}"
+    state: present
+    filename: brave-browser-release
+    update_cache: true
+  tags:
+    - brave
+    - packages
+    - browser
+
+- name: Install Brave browser
+  ansible.builtin.apt:
+    name: brave-browser
+    state: "{{ brave_package_state }}"
+    update_cache: true
+  tags:
+    - brave
+    - packages
+    - browser

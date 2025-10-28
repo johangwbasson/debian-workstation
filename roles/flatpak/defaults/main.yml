@@ -1,0 +1,14 @@
+---
+# Default variables for flatpak role
+
+# Flatpak packages to install
+flatpak_packages:
+  - flatpak
+  - plasma-discover-backend-flatpak
+
+# Flathub configuration
+flatpak_flathub_remote_name: flathub
+flatpak_flathub_remote_url: https://dl.flathub.org/repo/flathub.flatpakrepo
+
+# Installation scope (system or user)
+flatpak_installation: system

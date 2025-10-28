@@ -1,0 +1,5 @@
+---
+# defaults file for spotify
+spotify_flatpak_id: com.spotify.Client
+flatpak_remote: flathub
+flatpak_method: system

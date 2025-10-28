@@ -1,0 +1,84 @@
+---
+# tasks file for chromium
+
+- name: Ensure Flatpak is installed
+  ansible.builtin.apt:
+    name: flatpak
+    state: present
+    update_cache: true
+  tags:
+    - chromium
+    - packages
+    - browser
+    - flatpak
+
+- name: Add Flathub repository
+  community.general.flatpak_remote:
+    name: flathub
+    state: present
+    flatpakrepo_url: https://flathub.org/repo/flathub.flatpakrepo
+  tags:
+    - chromium
+    - packages
+    - browser
+    - flatpak
+
+- name: Install Chromium from Flathub
+  community.general.flatpak:
+    name: org.chromium.Chromium
+    state: present
+    remote: flathub
+  tags:
+    - chromium
+    - packages
+    - browser
+    - flatpak
+
+- name: Remove old Chromium PPA repository file if it exists
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/savoury1-chromium.list
+    state: absent
+  tags:
+    - chromium
+    - cleanup
+
+- name: Remove old Chromium PPA keyring if it exists
+  ansible.builtin.file:
+    path: /usr/share/keyrings/savoury1-chromium-ppa.gpg
+    state: absent
+  tags:
+    - chromium
+    - cleanup
+
+- name: Remove old Chromium APT preferences file if it exists
+  ansible.builtin.file:
+    path: "{{ chromium_apt_preferences_file }}"
+    state: absent
+  tags:
+    - chromium
+    - cleanup
+
+- name: Display Chromium installation info
+  ansible.builtin.debug:
+    msg: |
+      Chromium has been installed from Flathub!
+
+      Launch Chromium:
+      - From application menu: Search for "Chromium"
+      - From terminal: flatpak run org.chromium.Chromium
+
+      Chromium Flatpak features:
+      - Sandboxed for better security
+      - Automatic updates from Flathub
+      - Isolated from system
+
+      Useful Flatpak commands:
+      - flatpak update org.chromium.Chromium  : Update Chromium
+      - flatpak uninstall org.chromium.Chromium : Remove Chromium
+      - flatpak info org.chromium.Chromium    : Show package info
+
+      Note: Chromium is now installed as a Flatpak instead of from PPA.
+      This provides better security through sandboxing and easier updates.
+  tags:
+    - chromium
+    - browser

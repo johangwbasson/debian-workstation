@@ -1,0 +1,32 @@
+# User-specific variables
+.vars.yml
+
+# Ansible specific
+*.retry
+.vault_pass
+*.swp
+*.swo
+*~
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Collections and roles downloaded from Galaxy
+collections/
+roles/downloaded/
+
+# Environment files
+.env
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db

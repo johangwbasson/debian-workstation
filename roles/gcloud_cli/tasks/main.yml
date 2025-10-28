@@ -1,0 +1,161 @@
+---
+# tasks file for gcloud_cli
+
+- name: Install dependencies for Google Cloud CLI installation
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - gnupg
+      - curl
+    state: present
+    update_cache: true
+  tags:
+    - gcloud_cli
+    - gcloud
+    - google_cloud
+    - packages
+    - cloud
+    - dependencies
+
+- name: Check if Google Cloud CLI is already installed
+  ansible.builtin.command: gcloud --version
+  register: gcloud_installed
+  changed_when: false
+  failed_when: false
+  tags:
+    - gcloud_cli
+    - gcloud
+    - google_cloud
+    - cloud
+
+- name: Display current Google Cloud CLI version if installed
+  ansible.builtin.debug:
+    msg: "Google Cloud CLI already installed: {{ gcloud_installed.stdout_lines[0] }}"
+  when: gcloud_installed.rc == 0
+  tags:
+    - gcloud_cli
+    - gcloud
+    - google_cloud
+    - cloud
+
+- name: Create directory for Google Cloud GPG key
+  ansible.builtin.file:
+    path: /usr/share/keyrings
+    state: directory
+    mode: '0755'
+  tags:
+    - gcloud_cli
+    - gcloud
+    - google_cloud
+    - cloud
+
+- name: Check if Google Cloud GPG keyring exists and is valid
+  ansible.builtin.command: gpg --list-keys --keyring "{{ gcloud_keyring_path }}"
+  register: gcloud_keyring_check
+  changed_when: false
+  failed_when: false
+  tags:
+    - gcloud_cli
+    - gcloud
+    - google_cloud
+    - cloud
+
+- name: Remove corrupted Google Cloud GPG keyring if invalid
+  ansible.builtin.file:
+    path: "{{ gcloud_keyring_path }}"
+    state: absent
+  when: gcloud_keyring_check.rc != 0
+  tags:
+    - gcloud_cli
+    - gcloud
+    - google_cloud
+    - cloud
+
+- name: Download and import Google Cloud GPG key (official method)
+  ansible.builtin.shell: |
+    set -o pipefail
+    curl -fsSL "{{ gcloud_gpg_key_url }}" | gpg --dearmor -o "{{ gcloud_keyring_path }}"
+  args:
+    executable: /bin/bash
+    creates: "{{ gcloud_keyring_path }}"
+  tags:
+    - gcloud_cli
+    - gcloud
+    - google_cloud
+    - cloud
+    - download
+
+- name: Set correct permissions on Google Cloud GPG keyring
+  ansible.builtin.file:
+    path: "{{ gcloud_keyring_path }}"
+    mode: '0644'
+    owner: root
+    group: root
+  tags:
+    - gcloud_cli
+    - gcloud
+    - google_cloud
+    - cloud
+
+- name: Add Google Cloud SDK repository (official method)
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by={{ gcloud_keyring_path }}] {{ gcloud_repo_url }} cloud-sdk main"
+    filename: google-cloud-sdk
+    state: present
+  tags:
+    - gcloud_cli
+    - gcloud
+    - google_cloud
+    - cloud
+
+- name: Install Google Cloud CLI
+  ansible.builtin.apt:
+    name: google-cloud-cli
+    state: present
+    update_cache: true
+  tags:
+    - gcloud_cli
+    - gcloud
+    - google_cloud
+    - cloud
+    - packages
+
+- name: Verify Google Cloud CLI installation
+  ansible.builtin.command: gcloud --version
+  register: gcloud_version
+  changed_when: false
+  tags:
+    - gcloud_cli
+    - gcloud
+    - google_cloud
+    - cloud
+
+- name: Display Google Cloud CLI installation info
+  ansible.builtin.debug:
+    msg: |
+      Google Cloud CLI has been installed successfully!
+
+      Version: {{ gcloud_version.stdout_lines[0] }}
+
+      Getting started:
+      - Initialize gcloud: gcloud init
+      - Authenticate: gcloud auth login
+      - Set project: gcloud config set project PROJECT_ID
+
+      Useful commands:
+      - gcloud --version              : Show gcloud version
+      - gcloud init                   : Initialize or reinitialize gcloud
+      - gcloud auth login             : Authenticate with Google Cloud
+      - gcloud config list            : Show current configuration
+      - gcloud projects list          : List available projects
+      - gcloud help                   : Show help
+
+      Documentation: https://cloud.google.com/sdk/docs
+
+      Note: Run 'gcloud init' to get started with authentication and project setup.
+  tags:
+    - gcloud_cli
+    - gcloud
+    - google_cloud
+    - cloud

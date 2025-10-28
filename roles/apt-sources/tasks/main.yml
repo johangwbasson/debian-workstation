@@ -1,0 +1,26 @@
+---
+# Main tasks for apt-sources role
+
+- name: Backup existing sources.list
+  ansible.builtin.copy:
+    src: /etc/apt/sources.list
+    dest: /etc/apt/sources.list.backup
+    mode: "0644"
+    remote_src: true
+    force: false
+  when: backup_sources_list | bool
+
+- name: Deploy sources.list from template
+  ansible.builtin.template:
+    src: sources.list.j2
+    dest: /etc/apt/sources.list
+    owner: root
+    group: root
+    mode: "0644"
+    backup: true
+  notify: Update apt cache
+
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+  changed_when: false
