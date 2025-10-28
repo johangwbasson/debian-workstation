@@ -45,9 +45,9 @@ compression_tools:
   - tar
   - gzip
   - bzip2
-  - xz-utils  # Ubuntu: xz-utils (not just xz)
+  - xz-utils  # Debian/Ubuntu: xz-utils
   - zstd
-  - liblz4-tool  # Ubuntu: liblz4-tool (for lz4 command)
+  - lz4  # Debian: lz4, Ubuntu: liblz4-tool
 
 build_tools:
   - make
