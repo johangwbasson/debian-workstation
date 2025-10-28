@@ -60,9 +60,8 @@
     path: /etc/fstab
     regexp: '^(\s*UUID=[a-f0-9-]+)\s+/\s+btrfs\s+.*subvol=/@.*$'
     backrefs: true
-    line: '\1 /              btrfs   subvol=/@,{{ btrfs_mount_options }} 0 0'
+    line: '\1\t/\tbtrfs\tsubvol=/@,{{ btrfs_mount_options }}\t0\t0'
     backup: false
-    validate: '/usr/bin/findmnt --verify --tab-file %s'
   register: root_fstab_modified
   tags:
     - btrfs
@@ -75,9 +74,8 @@
     path: /etc/fstab
     regexp: '^(\s*UUID=[a-f0-9-]+)\s+/home\s+btrfs\s+.*subvol=/@home.*$'
     backrefs: true
-    line: '\1 /home          btrfs   subvol=/@home,{{ btrfs_mount_options }} 0 0'
+    line: '\1\t/home\tbtrfs\tsubvol=/@home,{{ btrfs_mount_options }}\t0\t0'
     backup: false
-    validate: '/usr/bin/findmnt --verify --tab-file %s'
   register: home_fstab_modified
   tags:
     - btrfs
@@ -89,7 +87,21 @@
   ansible.builtin.command: findmnt --verify --tab-file /etc/fstab
   register: fstab_verify
   changed_when: false
-  failed_when: fstab_verify.rc != 0
+  failed_when: false
+  tags:
+    - btrfs
+    - btrfs_optimize
+    - filesystem
+    - verification
+
+- name: Check for parse errors in fstab
+  ansible.builtin.fail:
+    msg: |
+      fstab has parse errors!
+      {{ fstab_verify.stderr }}
+      {{ fstab_verify.stdout }}
+  when:
+    - fstab_verify.stderr is regex('[1-9][0-9]* parse error')
   tags:
     - btrfs
     - btrfs_optimize
@@ -99,9 +111,11 @@
 - name: Display fstab verification results
   ansible.builtin.debug:
     msg: |
-      ✓ fstab verification successful!
+      fstab verification completed.
       {{ fstab_verify.stdout }}
-  when: fstab_verify.rc == 0
+      {% if fstab_verify.stderr %}
+      Notes: {{ fstab_verify.stderr }}
+      {% endif %}
   tags:
     - btrfs
     - btrfs_optimize

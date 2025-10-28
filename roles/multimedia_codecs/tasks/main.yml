@@ -42,7 +42,7 @@
       - libogg0
       - libvorbis0a
       - libvorbisenc2
-      - libflac12
+      - libflac14
       - libopus0
       - libopusfile0
       - vorbis-tools
@@ -58,8 +58,8 @@
   ansible.builtin.apt:
     name:
       - libx264-164
-      - libx265-199
-      - libvpx7
+      - libx265-215
+      - libvpx9
       - libtheora0
       - libde265-0
       - libwebp7

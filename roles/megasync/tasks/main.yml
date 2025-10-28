@@ -72,8 +72,8 @@
   ansible.builtin.set_fact:
     mega_distro_name: >-
       {{
-        'Debian_12.0' if ansible_distribution == 'Debian' and ansible_distribution_major_version|int >= 12
-        else 'Debian_' + ansible_distribution_version
+        'Debian_12' if ansible_distribution == 'Debian' and ansible_distribution_major_version|int >= 12
+        else 'Debian_' + ansible_distribution_major_version
       }}
   tags:
     - megasync
